@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2015-2020 ODC Contributors
 # SPDX-License-Identifier: Apache-2.0
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Any, Tuple, Union
 from urllib.parse import urlparse
 
 from datacube.model import Dataset
@@ -82,7 +82,7 @@ class BandInfo:
                  ds: Dataset,
                  band: str,
                  uri_scheme: Optional[str] = None,
-                 extra_dim_index: Optional[int] = None):
+                 extra_dim_index: Union[None, Tuple[int], Tuple[int, int]] = None):
         try:
             mp, = ds.type.lookup_measurements([band]).values()
         except KeyError:
@@ -90,7 +90,7 @@ class BandInfo:
 
         if 'extra_dim' in mp:
             # 3D case
-            mm = ds.measurements.get(mp.extra_dim.get('measurement_map')[extra_dim_index])
+            mm = ds.measurements.get(mp.extra_dim.get('measurement_map')[extra_dim_index[0]])
         else:
             # 2D case
             mm = ds.measurements.get(mp.canonical_name)
@@ -104,6 +104,10 @@ class BandInfo:
         base_uri = pick_uri(ds.uris, uri_scheme)
 
         bint, layer = _get_band_and_layer(mm)
+
+        # We don't use this for 3D measurements
+        if 'extra_dim' in mp:
+            bint = 1
 
         self.name = band
         self.uri = uri_resolve(base_uri, mm.get('path'))
