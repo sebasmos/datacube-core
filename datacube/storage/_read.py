@@ -164,9 +164,9 @@ def read_time_slice(rdr,
         pix = rdr.read(*norm_read_args(rr.roi_src, dst.shape, extra_dim_index))
 
         if sx < 0:
-            pix = pix[:, ::-1]
+            pix = np.flip(pix, -1)
         if sy < 0:
-            pix = pix[::-1, :]
+            pix = np.flip(pix, -2)
 
         if rdr.nodata is None:
             np.copyto(dst, pix)
